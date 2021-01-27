@@ -4,10 +4,13 @@ import uuid
 import base64
 import boto3
 import tempfile
+import logging
 
 from enum import Enum
 from boto3.session import Session
 from io import BytesIO
+
+logger = logging.getLogger(__name__)
 
 
 class SQSExtendedClientConstants(Enum):
@@ -153,9 +156,9 @@ class SQSClientExtended(object):
 			s3 = session.resource('s3')
 			s3_object = s3.Object(s3_msg_bucket_name, s3_msg_key)
 			s3_object.delete()
-			print('Deleted s3 object https://s3.amazonaws.com/{}/{}'.format(s3_msg_bucket_name, s3_msg_key))
+			logger.info('Deleted s3 object https://s3.amazonaws.com/{}/{}'.format(s3_msg_bucket_name, s3_msg_key))
 		except Exception as e:
-			print("Failed to delete the message content in S3 object. {}, type:{}".format(
+			logger.error("Failed to delete the message content in S3 object. {}, type:{}".format(
 				str(e), type(e).__name__))
 			raise e
 
@@ -184,7 +187,7 @@ class SQSClientExtended(object):
 		if self.__is_s3_receipt_handle(receipt_handle):
 			self.__delete_message_payload_from_s3(receipt_handle)
 			receipt_handle = self.__get_orig_receipt_handle(receipt_handle)
-		print("receipt_handle={}".format(receipt_handle))
+		logger.info("receipt_handle={}".format(receipt_handle))
 		return self.sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
 	def _send_queue_message(self, queue_url, message_body, message_group_id, message_deduplication_id, message_attributes, is_fifo_queue):
@@ -253,7 +256,7 @@ class SQSClientExtended(object):
 				os.remove(opt_file.name)
 			return {'s3BucketName': self.s3_bucket_name, 's3Key': s3_key}
 		except Exception as e:
-			print("Failed to store the message content in an S3 object. SQS message was not sent. {}, type:{}".format(
+			logger.error("Failed to store the message content in an S3 object. SQS message was not sent. {}, type:{}".format(
 				str(e), type(e).__name__))
 			raise e
 

@@ -185,7 +185,7 @@ class SQSClientExtended(object):
 			self.__delete_message_payload_from_s3(receipt_handle)
 			receipt_handle = self.__get_orig_receipt_handle(receipt_handle)
 		print("receipt_handle={}".format(receipt_handle))
-		self.sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
+		return self.sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=receipt_handle)
 
 	def _send_queue_message(self, queue_url, message_body, message_group_id, message_deduplication_id, message_attributes, is_fifo_queue):
 		"""
